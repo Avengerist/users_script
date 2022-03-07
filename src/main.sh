@@ -11,6 +11,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+declare -a deletedUsers=()
+
 if [[ -f $USERS_PATH ]]; then
 	IFS=$'\n'
 	echo -e "Do you want to create or delete users?\n"
@@ -104,12 +106,7 @@ if [[ -f $USERS_PATH ]]; then
 	elif [[ $CHOICE_ACTION == "2" ]]; then
 		if [[ `grep "^$username" /etc/passwd` ]]; then
 			userdel -r $username
-			if [[ -f /tmp/deleted.txt ]]; then
-				echo $username >> /tmp/deleted.txt
-			else
-				touch /tmp/deleted.txt
-				echo $username >> /tmp/deleted.txt
-			fi
+			deletedUsers+=($username)
 		else
 			echo -e "User $username was not found in the system!\n"
 		fi
@@ -119,11 +116,10 @@ if [[ -f $USERS_PATH ]]; then
 	fi
 
 	done	
-if [[ $CHOICE_ACTION == "2" ]]; then
-	output_deleted=`cat /tmp/deleted.txt`
-	echo -e "List of deleted users:"
-	echo -e ${RED}$output_deleted${NC}
-	rm /tmp/deleted.txt
+
+if [[ $CHOICE_ACTION == "2" && ${#deletedUsers[@]} -gt 0 ]]; then
+	echo -e "${RED}List of deleted users:${NC}"
+	echo -e ${deletedUsers[@]}
 fi
 
 else
